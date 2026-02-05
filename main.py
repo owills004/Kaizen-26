@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Path
 from Models.users import UserRegister, UserLogin, UserUpdate
+from typing import Annotated
 import uvicorn
 
 
@@ -24,11 +25,12 @@ async def user_login(user: UserLogin):
     }
 
 
-@app.put("/user/update")
-async def update_user(user: UserUpdate):
-    name = user.name
-    password = user.password
-    return {
-        "message": "Updated successfully",
-        "user": user
-    }
+@app.put("/user/{user_id}")
+async def update_user(user_id: Annotated[int, Path(title="User ID")], user: UserUpdate, q:str | None = None):
+    results = {'user': user_id}
+    if q: 
+        results.update({'q': q})
+    if user:
+        results.update({'user': user})
+    return results
+
