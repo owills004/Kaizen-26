@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Path, Depends, HTTPException, Query
-from Models.users import UserRegister, UserLogin, UserUpdate
+from Models.users import UserRegister, UserLogin, UserUpdate, User
 from sqlmodel import Session, create_engine, select, SQLModel
 from typing import Annotated
 import uvicorn
@@ -40,12 +40,20 @@ async def greet():
 
 
 @app.post("/user/register")
-async def register(user: UserRegister, db: SessionDep):
+async def register(user: User, db: SessionDep):
     db.add(user)
     db.commit()
     return {
         "message": "Registered successfully",
     }
+
+
+@app.get("/users")
+async def get_users(db: SessionDep, offset: int =0, limit: int=10)->list[User]:
+    users = db.exec(select(User).offset(offset).limit(limit))
+    return users.all()
+
+
 
 @app.post("/user/login")
 async def user_login(user: UserLogin):
