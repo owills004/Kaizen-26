@@ -1,10 +1,20 @@
-from fastapi import FastAPI, Path
+from fastapi import FastAPI, Path, Depends
 from Models.users import UserRegister, UserLogin, UserUpdate
 from typing import Annotated
 import uvicorn
+import json
 
 
 app = FastAPI()
+
+def get_db():
+    with open("database.json", "r") as f:
+        return json.load(f)
+
+def save_db(db):
+    with open('database.json', 'w') as f:
+        json.dump(db, f, indent=2)
+
 
 
 @app.get("/")
@@ -13,7 +23,9 @@ async def greet():
 
 
 @app.post("/user/register")
-async def register(user: UserRegister):
+async def register(user: UserRegister, db: dict = Depends(get_db)):
+    db['users'].append(user)
+    save_db(db)
     return {
         "message": "Registered successfully",
     }
