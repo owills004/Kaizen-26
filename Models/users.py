@@ -1,27 +1,28 @@
 from pydantic import BaseModel, EmailStr
+from sqlmodel import SQLModel, Field
 from typing import Optional
 
 
 
-class User(BaseModel):
-    id: str
-    name: str
-    email: EmailStr
-    hashed_password: str
+class User(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(index=True, nullable=False)
+    email: EmailStr = Field(index=True, nullable=False)
+    hashed_password: str = Field(nullable=False)
 
 
 class UserRegister(BaseModel):
-    name: str
-    email: EmailStr
-    password: str
-    confirm_password: str
+    name: str = Field(nullable=False)
+    email: EmailStr = Field(nullable=False)
+    password: str = Field(nullable=False)
+    confirm_password: str = Field(nullable=False)
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+    email: EmailStr = Field(nullable=False)
+    password: str = Field(nullable=False)
 
 
 class UserUpdate(BaseModel):
-    name: Optional[str] = None
-    password: Optional[str] = None
+    name: Optional[str] = Field(default=None)
+    password: Optional[str] = Field(default=None)

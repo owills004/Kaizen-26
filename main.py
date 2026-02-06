@@ -1,19 +1,12 @@
-from fastapi import FastAPI, Path, Depends
+from fastapi import FastAPI, Path, Depends, HTTPException, Query
 from Models.users import UserRegister, UserLogin, UserUpdate
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 from typing import Annotated
 import uvicorn
-import json
 
 
 app = FastAPI()
 
-def get_db():
-    with open("database.json", "r") as f:
-        return json.load(f)
-
-def save_db(db):
-    with open('database.json', 'w') as f:
-        json.dump(db, f, indent=2)
 
 
 
