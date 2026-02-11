@@ -14,7 +14,7 @@ class UserRegister(BaseModel):
     name: str = Field(nullable=False)
     email: EmailStr = Field(nullable=False)
     password: str = Field(nullable=False)
-    confirm_password: str = Field(nullable=False)
+    confirm_password: str 
 
     @model_validator(mode='after')
     def check_passwords_match(self) -> 'UserRegister':
