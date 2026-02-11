@@ -74,11 +74,11 @@ async def get_users(db: SessionDep, offset: int =0, limit: int=10):
 
 
 @app.post("/user/login")
-async def user_login(user: UserLogin, db: SessionDep):
-    user = db.exec(select(User).where(User.email == user.email)).first()
+async def user_login(user_in: UserLogin, db: SessionDep):
+    user = db.exec(select(User).where(User.email == user_in.email)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found, create an account")
-    if not pwd_context.verify(user.hashed_password, user.password):
+    if not pwd_context.verify(user_in.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return {
         "message": "Logged in successfully"
@@ -87,10 +87,5 @@ async def user_login(user: UserLogin, db: SessionDep):
 
 @app.put("/user/{user_id}")
 async def update_user(user_id: Annotated[int, Path(title="User ID")], user: UserUpdate, q:str | None = None):
-    results = {'user': user_id}
-    if q: 
-        results.update({'q': q})
-    if user:
-        results.update({'user': user})
-    return results
+    pass
 
