@@ -86,6 +86,21 @@ async def user_login(user_in: UserLogin, db: SessionDep):
 
 
 @app.put("/user/{user_id}")
-async def update_user(user_id: Annotated[int, Path(title="User ID")], user: UserUpdate, q:str | None = None):
-    pass
+async def update_user(user_id: Annotated[int, Path(title="User ID")], user_in: UserUpdate, db: SessionDep):
+    user = db.exec(select(User).where(User.id == user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail='User not found')
+    user.name = user_in.name
+    user.hashed_password = hash_password(user_in.password)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return {
+        'message': "User updated successfully",
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email
+        }
+    }
 
