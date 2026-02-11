@@ -81,7 +81,12 @@ async def user_login(user_in: UserLogin, db: SessionDep):
     if not pwd_context.verify(user_in.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return {
-        "message": "Logged in successfully"
+        "message": "Logged in successfully",    
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email
+        }
     }
 
 
@@ -104,8 +109,3 @@ async def update_user(user_id: Annotated[int, Path(title="User ID")], user_in: U
         }
     }
 
-
-
-@app.post()
-async def delete_user():
-    pass
