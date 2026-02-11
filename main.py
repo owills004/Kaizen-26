@@ -104,3 +104,8 @@ async def update_user(user_id: Annotated[int, Path(title="User ID")], user_in: U
         }
     }
 
+
+
+@app.post()
+async def delete_user():
+    pass
