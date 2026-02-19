@@ -1,44 +1,12 @@
 from fastapi import FastAPI, Path, Depends, HTTPException, Query
 from Models.users import UserRegister, UserLogin, UserUpdate, User
-from sqlmodel import Session, create_engine, select, SQLModel
+from Controllers.userController import create_user, get_user, get_users, delete_user, login_user, update_user
+from Database.connection import SessionDep
 from typing import Annotated
-from passlib.context import CryptContext
 import uvicorn
-
-
-
-sqlite_filename = "database.db"
-sqlite_url = f"sqlite:///{sqlite_filename}"
-
-
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args = connect_args)
-
-
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-
-def get_session():
-    with Session(engine) as session:
-        yield session
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def hash_password(password: str):
-    return pwd_context.hash(password)
-SessionDep = Annotated[Session, Depends(get_session)]
-
-
-
-
-
 
 app = FastAPI()
 
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
 
 
 @app.get("/")
@@ -48,64 +16,30 @@ async def greet():
 
 @app.post("/user/register")
 async def register(user_in: UserRegister, db: SessionDep):
-    user = User(
-        name = user_in.name,
-        email = user_in.email,
-        hashed_password = hash_password(user_in.password),
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return {
-        "message": "Registered successfully",
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email
-        }
-    }
+    return create_user(user_in, db)
+ 
 
 
 @app.get("/users")
-async def get_users(db: SessionDep, offset: int =0, limit: int=10):
-    users = db.exec(select(User).offset(offset).limit(limit))
-    return users.all()
+async def read_users(db: SessionDep, offset: int =0, limit: int=10):
+    return get_users(db, offset, limit)
+   
 
 
 
 @app.post("/user/login")
 async def user_login(user_in: UserLogin, db: SessionDep):
-    user = db.exec(select(User).where(User.email == user_in.email)).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found, create an account")
-    if not pwd_context.verify(user_in.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {
-        "message": "Logged in successfully",    
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email
-        }
-    }
+    return login_user(user_in, db)
+
 
 
 @app.put("/user/{user_id}")
-async def update_user(user_id: Annotated[int, Path(title="User ID")], user_in: UserUpdate, db: SessionDep):
-    user = db.exec(select(User).where(User.id == user_id)).first()
-    if not user:
-        raise HTTPException(status_code=404, detail='User not found')
-    user.name = user_in.name
-    user.hashed_password = hash_password(user_in.password)
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return {
-        'message': "User updated successfully",
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email
-        }
-    }
+async def update_user_route(user_id: int, user_in: UserUpdate, db: SessionDep):
+    return update_user(user_id, user_in, db)
+
+
+@app.delete("/user/{user_id}")
+async def delete_user_route(user_id: int, db: SessionDep):
+    return delete_user(user_id, db)
+
 
