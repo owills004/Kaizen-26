@@ -19,7 +19,6 @@ async def register(user_in: UserRegister, db: SessionDep):
     return create_user(user_in, db)
  
 
-
 @app.get("/users")
 async def read_users(db: SessionDep, offset: int =0, limit: int=10):
     return get_users(db, offset, limit)
@@ -33,7 +32,6 @@ async def read_user(user_id: int, db: SessionDep):
 @app.post("/user/login")
 async def user_login(user_in: UserLogin, db: SessionDep):
     return login_user(user_in, db)
-
 
 
 @app.put("/user/{user_id}")
