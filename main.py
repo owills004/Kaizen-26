@@ -25,6 +25,9 @@ async def read_users(db: SessionDep, offset: int =0, limit: int=10):
     return get_users(db, offset, limit)
    
 
+@app.get("/user/{user_id}")
+async def read_user(user_id: int, db: SessionDep):
+    return get_user(user_id, db)
 
 
 @app.post("/user/login")
@@ -43,3 +46,10 @@ async def delete_user_route(user_id: int, db: SessionDep):
     return delete_user(user_id, db)
 
 
+@app.put("/user/{user_id}")
+async def update_user_rout(user_id: int, user_in: UserUpdate, db: SessionDep):
+    return update_user(user_id, user_in, db)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="[IP_ADDRESS]", port=8000)
